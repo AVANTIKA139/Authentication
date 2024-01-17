@@ -6,6 +6,9 @@ app.use(cookies());
 const verifyToken = require("./tokens/verifyToken");
 const generateToken = require("./tokens/generateToken");
 
+const { connectDatabase } = require("./connection/file");
+const SIGNUP_MODEL = require("./models/signup");
+
 app.get("/public", (req, res) => {
   try {
     return res.json({ success: true, message: "Hello from the public api " });
@@ -14,10 +17,27 @@ app.get("/public", (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 });
+app.post("/signup", async (req, res) => {
+  try {
+    const signup = {
+      username: req.body.Username,
+      email: req.body.Email,
+
+      password: req.body.Password,
+    };
+    const signupData = new SIGNUP_MODEL(signup);
+    await signupData.save();
+    return res.json({ success: true, message: "data saved successfully" });
+  } catch (error) {
+    console.log(error.message);
+    return res.status(400).json({ success: false, error: error.message });
+  }
+});
 
 app.post("/login", (req, res) => {
   try {
     // console.log(req.body);
+
     const userid = req.body.userid;
     console.log(req.body);
 
@@ -77,6 +97,7 @@ app.get("/test", testMiddleWareFunction, (req, res) => {
     res.status(400).json({ success: false, error: error.message });
   }
 });
+connectDatabase();
 
 app.listen(5000, () => {
   console.log("Server is running at port 5000");
