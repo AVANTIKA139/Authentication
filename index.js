@@ -19,15 +19,28 @@ app.get("/public", (req, res) => {
 });
 app.post("/signup", async (req, res) => {
   try {
+    console.log(req.body);
+    const checksignup = await SIGNUP_MODEL.findOne({ email: req.body.email });
+    if (checksignup) {
+      return res
+        .status(400)
+        .json({ success: false, error: "user already registered" });
+    }
     const signup = {
-      username: req.body.Username,
-      email: req.body.Email,
-
-      password: req.body.Password,
+      username: req.body.username,
+      email: req.body.email,
+      password: req.body.password,
+      name: req.body.name,
+      dob: req.body.dob,
+      phonenumber: req.body.phonenumber,
+      isUnder18: req.body.isUnder18,
     };
+    console.log(signup);
     const signupData = new SIGNUP_MODEL(signup);
     await signupData.save();
-    return res.json({ success: true, message: "data saved successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: "data saved successfully" });
   } catch (error) {
     console.log(error.message);
     return res.status(400).json({ success: false, error: error.message });
