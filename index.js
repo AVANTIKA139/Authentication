@@ -20,17 +20,19 @@ app.get("/public", (req, res) => {
 app.post("/signup", async (req, res) => {
   try {
     console.log(req.body);
-    const checksignup = await SIGNUP_MODEL.findOne({ email: req.body.email });
+    const checksignup = await SIGNUP_MODEL.findOne({
+      email: req.body.email,
+    });
     if (checksignup) {
       return res
         .status(400)
         .json({ success: false, error: "user already registered" });
     }
     const signup = {
-      username: req.body.username,
       email: req.body.email,
       password: req.body.password,
-      name: req.body.name,
+      username: req.body.username,
+
       dob: req.body.dob,
       phonenumber: req.body.phonenumber,
       isUnder18: req.body.isUnder18,
@@ -47,26 +49,57 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.post("/login", (req, res) => {
+// app.post("/login", (req, res) => {
+//   try {
+//     // console.log(req.body);
+
+//     const userid = req.body.userid;
+//     console.log(req.body);
+
+//     if ((req.body.password = "database password")) {
+//       const token = generateToken(userid);
+//       console.log(token);
+//       res.cookie("web_tk", token); //setting cookie
+//       return res.json({ success: true, message: "Hello cookie generated" });
+//     } else {
+//       return res
+//         .status(400)
+//         .json({ success: false, message: "Invalid Credentials" });
+//     }
+//   } catch (error) {
+//     return res.status(400).json({ success: false, error: error.message });
+//   }
+// });
+app.post("./login", async (req, res) => {
   try {
-    // console.log(req.body);
+    let email = req.body.useremail;
+    let inputpassword= req.body.userpassword;
 
-    const userid = req.body.userid;
-    console.log(req.body);
-
-    if ((req.body.password = "database password")) {
-      const token = generateToken(userid);
-      console.log(token);
-      res.cookie("web_tk", token); //setting cookie
-      return res.json({ success: true, message: "Hello cookie generated" });
-    } else {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid Credentials" });
-    }
-  } catch (error) {
-    return res.status(400).json({ success: false, error: error.message });
+    const checksignup = await SIGNUP_MODEL.findOne({ email: email });
+    if (!checksignup) {
+    
+    
+   
+    return res.status(400).json({ success: false, error: "User not found ,please signup first" });
   }
+  let originalpassword = checksignup.password;
+  if(inputpassword === originalpassword){
+    const token = generateToken(checksignup._id);
+    console.log(token);
+    res.cookie("auth_tk",token);
+    return res.json({success: true, message: "Logged in success"});
+  }else{
+    return res.status(400).json({success: false,error: "Incorrect Password"});
+  }
+
+  
+  }
+  catch(error){
+    console.log(error);
+    return res.status(400).json({success: false, message: error.message});
+
+  }
+  
 });
 
 const testMiddleWareFunction = (req, res, next) => {
