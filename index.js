@@ -8,6 +8,8 @@ const generateToken = require("./tokens/generateToken");
 
 const { connectDatabase } = require("./connection/file");
 const SIGNUP_MODEL = require("./models/signup");
+const { encrytPassword, verifyPassword } = require("./functions/encryption");
+const { sendLoginOtp } = require("./functions/otp");
 
 app.get("/public", (req, res) => {
   try {
@@ -26,7 +28,15 @@ app.post("/signup", async (req, res) => {
     if (checksignup) {
       return res
         .status(400)
-        .json({ success: false, error: "user already registered" });
+        .json({ success: false, error: "user(email) already registered" });
+    }
+    const check1signup = await SIGNUP_MODEL.findOne({
+      username: req.body.username,
+    });
+    if (check1signup) {
+      return res
+        .status(400)
+        .json({ success: false, error: "username already registered" });
     }
     const signup = {
       email: req.body.email,
@@ -73,33 +83,31 @@ app.post("/signup", async (req, res) => {
 app.post("./login", async (req, res) => {
   try {
     let email = req.body.useremail;
-    let inputpassword= req.body.userpassword;
+    let inputpassword = req.body.userpassword;
 
-    const checksignup = await SIGNUP_MODEL.findOne({ email: email });
-    if (!checksignup) {
-    
-    
-   
-    return res.status(400).json({ success: false, error: "User not found ,please signup first" });
-  }
-  let originalpassword = checksignup.password;
-  if(inputpassword === originalpassword){
-    const token = generateToken(checksignup._id);
-    console.log(token);
-    res.cookie("auth_tk",token);
-    return res.json({success: true, message: "Logged in success"});
-  }else{
-    return res.status(400).json({success: false,error: "Incorrect Password"});
-  }
-
-  
-  }
-  catch(error){
+    const checkuser = await SIGNUP_MODEL.findOne({ email: email });
+    if (!checkuser) {
+      return res
+        .status(400)
+        .json({ success: false, error: "User not found ,please signup first" });
+    }
+    let originalpassword = checkuser.password;
+    if (await verifyPassword(inputpassword, originalpassword)) {
+      sendLoginOtp(`+91${checkuser.phonenumber}`);
+      // here we will do 2fa processs which we will send otp to the logged in user
+      // const token = generateToken(checkuser._id);
+      // console.log(token);
+      // res.cookie("auth_tk",token);
+      // return res.json({success: true, message: "Logged in success"});
+    } else {
+      return res
+        .status(400)
+        .json({ success: false, error: "Incorrect Password" });
+    }
+  } catch (error) {
     console.log(error);
-    return res.status(400).json({success: false, message: error.message});
-
+    return res.status(400).json({ success: false, message: error.message });
   }
-  
 });
 
 const testMiddleWareFunction = (req, res, next) => {
