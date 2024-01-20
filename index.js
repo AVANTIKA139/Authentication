@@ -40,7 +40,7 @@ app.post("/signup", async (req, res) => {
     }
     const signup = {
       email: req.body.email,
-      password: req.body.password,
+      password:  await encrytPassword(req.body.password),
       username: req.body.username,
 
       dob: req.body.dob,
@@ -80,7 +80,7 @@ app.post("/signup", async (req, res) => {
 //     return res.status(400).json({ success: false, error: error.message });
 //   }
 // });
-app.post("./login", async (req, res) => {
+app.post("/login", async (req, res) => {
   try {
     let email = req.body.useremail;
     let inputpassword = req.body.userpassword;
@@ -95,10 +95,10 @@ app.post("./login", async (req, res) => {
     if (await verifyPassword(inputpassword, originalpassword)) {
       sendLoginOtp(`+91${checkuser.phonenumber}`);
       // here we will do 2fa processs which we will send otp to the logged in user
-      // const token = generateToken(checkuser._id);
-      // console.log(token);
-      // res.cookie("auth_tk",token);
-      // return res.json({success: true, message: "Logged in success"});
+      const token = generateToken(checkuser._id);
+      console.log(token);
+      res.cookie("auth_tk", token);
+      return res.json({ success: true, message: "Logged in success" });
     } else {
       return res
         .status(400)
