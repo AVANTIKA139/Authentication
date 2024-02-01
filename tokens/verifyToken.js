@@ -3,9 +3,9 @@ const verifyToken = (token) => {
   try {
     const result = jwt.verify(token, "secretKey");
 
-    return true;
+    return result;
   } catch (error) {
-    console.log(error);
+    return false;
   }
 };
 module.exports = verifyToken;

@@ -1,6 +1,6 @@
-const TWILIO_SERVICE_ID = "VAd9c00709311d4ad7167a374ddb524b40"; //from the services->verify page
+const TWILIO_SERVICE_ID = "VAebd3e277641bdd8b2e34e8f3c473f5f5"; //from the services->verify page
 const TWILIO_ACCOUNT_ID = "ACab4565c7953a0ff9acda93e218587526"; // account settings
-const TWILIO_AUTH_TOKEN = "04ae92620d395a86caa9cb71c4a21de6"; // account settings below
+const TWILIO_AUTH_TOKEN = "1dd7f73e1b056f50ff54aa47efef28cf"; // account settings below
 
 const client = require("twilio")(TWILIO_ACCOUNT_ID, TWILIO_AUTH_TOKEN);
 
@@ -46,6 +46,26 @@ const sendLoginOtp = (userphone) => {
           error: "Server Issue, Try Again Later!",
         };
     });
+};
+
+const verifyOtp = async (phonenum, code) => {
+  try {
+    const verification_check = await client.verify
+      .services(TWILIO_SERVICE_ID)
+      .verificationChecks.create({
+        to: phonenum,
+        code: code,
+      });
+    console.log(verification_check.status);
+    if (verification_check.status === "approved") {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 };
 
 module.exports = { sendLoginOtp };
