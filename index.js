@@ -9,7 +9,7 @@ const generateToken = require("./tokens/generateToken");
 const { connectDatabase } = require("./connection/file");
 const SIGNUP_MODEL = require("./models/signup");
 const { encrytPassword, verifyPassword } = require("./functions/encryption");
-const { sendLoginOtp, verifyOtp } = require("./functions/otp");
+// const { sendLoginOtp, verifyOtp } = require("./functions/otp");
 
 app.get("/public", (req, res) => {
   try {
@@ -141,7 +141,7 @@ app.post("/login", async (req, res) => {
     }
     let originalpassword = checkuser.password;
     if (await verifyPassword(inputpassword, originalpassword)) {
-      sendLoginOtp(`+91${checkuser.phonenumber}`);
+      // sendLoginOtp(`+91${checkuser.phonenumber}`);
       // here we will do 2fa processs which we will send otp to the logged in user
       const token = generateToken(checkuser._id);
       console.log(token);
@@ -157,36 +157,36 @@ app.post("/login", async (req, res) => {
     return res.status(400).json({ success: false, message: error.message });
   }
 });
-app.post("/mfaverify", async (req, res) => {
-  try {
-    let email = req.body.useremail;
-    let inputpassword = req.body.userpassword;
-    let code = req.body.code;
-    const checkUser = await USER_MODEL.findOne({ email: email });
-    if (!checkUser) {
-      return res
-        .status(400)
-        .json({ success: false, error: "User not found, please signup first" });
-    }
-    let originalpassword = checkUser.password;
+// app.post("/mfaverify", async (req, res) => {
+//   try {
+//     let email = req.body.useremail;
+//     let inputpassword = req.body.userpassword;
+//     let code = req.body.code;
+//     const checkUser = await USER_MODEL.findOne({ email: email });
+//     if (!checkUser) {
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "User not found, please signup first" });
+//     }
+//     let originalpassword = checkUser.password;
 
-    if (
-      (await verifyPassword(inputpassword, originalpassword)) &&
-      (await verifyOtp(`+91${checkUser.phonenumber}`, code))
-    ) {
-      const token = generateToken(checkUser._id);
-      res.cookie("auth_tk", token);
-      return res.json({ success: true, message: "Logged in success" });
-    } else {
-      return res
-        .status(400)
-        .json({ success: false, error: "Incorrect credentials" });
-    }
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({ success: false, error: error.message });
-  }
-});
+//     if (
+//       (await verifyPassword(inputpassword, originalpassword)) &&
+//       (await verifyOtp(`+91${checkUser.phonenumber}`, code))
+//     ) {
+//       const token = generateToken(checkUser._id);
+//       res.cookie("auth_tk", token);
+//       return res.json({ success: true, message: "Logged in success" });
+//     } else {
+//       return res
+//         .status(400)
+//         .json({ success: false, error: "Incorrect credentials" });
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(400).json({ success: false, error: error.message });
+//   }
+// });
 
 app.get("/currentuser", checkIfUserLoggedIn, async (req, res) => {
   try {
